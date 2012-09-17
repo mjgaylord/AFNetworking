@@ -426,16 +426,22 @@ static void AFNetworkReachabilityReleaseCallback(const void *info) {
         [request setHTTPShouldUsePipelining:YES];
     }
 	
-    if (parameters) {
+     if (parameters) {
         if ([method isEqualToString:@"GET"] || [method isEqualToString:@"HEAD"] || [method isEqualToString:@"DELETE"]) {
-            url = [NSURL URLWithString:[[url absoluteString] stringByAppendingFormat:[path rangeOfString:@"?"].location == NSNotFound ? @"?%@" : @"&%@", AFQueryStringFromParametersWithEncoding(parameters, self.stringEncoding)]];
+			if (parameters && parameters.count > 0) {
+				url = [NSURL URLWithString:[[url absoluteString] stringByAppendingFormat:[path rangeOfString:@"?"].location == NSNotFound ? @"?%@" : @"&%@", AFQueryStringFromParametersWithEncoding(parameters, self.stringEncoding)]];
+			}
             [request setURL:url];
         } else {
             NSString *charset = (__bridge NSString *)CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(self.stringEncoding));
             switch (self.parameterEncoding) {
                 case AFFormURLParameterEncoding:;
-                    [request setValue:[NSString stringWithFormat:@"application/x-www-form-urlencoded; charset=%@", charset] forHTTPHeaderField:@"Content-Type"];
-                    [request setHTTPBody:[AFQueryStringFromParametersWithEncoding(parameters, self.stringEncoding) dataUsingEncoding:self.stringEncoding]];
+					[request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+					if (parameters.count > 0) {
+						[request setHTTPBody:[AFQueryStringFromParametersWithEncoding(parameters, self.stringEncoding) dataUsingEncoding:self.stringEncoding]];
+						break;
+					}
+                    [request setHTTPBody:[@"{}" dataUsingEncoding:self.stringEncoding]];
                     break;
                 case AFJSONParameterEncoding:;
                     [request setValue:[NSString stringWithFormat:@"application/json; charset=%@", charset] forHTTPHeaderField:@"Content-Type"];
@@ -448,6 +454,7 @@ static void AFNetworkReachabilityReleaseCallback(const void *info) {
             }
         }
     }
+
     
 	return request;
 }
