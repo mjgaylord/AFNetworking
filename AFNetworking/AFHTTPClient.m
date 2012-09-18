@@ -436,16 +436,18 @@ static void AFNetworkReachabilityReleaseCallback(const void *info) {
             NSString *charset = (__bridge NSString *)CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(self.stringEncoding));
             switch (self.parameterEncoding) {
                 case AFFormURLParameterEncoding:;
+					[request setHTTPBody:[AFQueryStringFromParametersWithEncoding(parameters, self.stringEncoding) dataUsingEncoding:self.stringEncoding]];
+                    [request setHTTPBody:[@"{}" dataUsingEncoding:self.stringEncoding]];
+                    break;
+                case AFJSONParameterEncoding:;
 					[request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
 					if (parameters.count > 0) {
 						[request setHTTPBody:[AFQueryStringFromParametersWithEncoding(parameters, self.stringEncoding) dataUsingEncoding:self.stringEncoding]];
 						break;
 					}
                     [request setHTTPBody:[@"{}" dataUsingEncoding:self.stringEncoding]];
-                    break;
-                case AFJSONParameterEncoding:;
-                    [request setValue:[NSString stringWithFormat:@"application/json; charset=%@", charset] forHTTPHeaderField:@"Content-Type"];
-                    [request setHTTPBody:[AFJSONStringFromParameters(parameters) dataUsingEncoding:self.stringEncoding]];
+//                    [request setValue:[NSString stringWithFormat:@"application/json; charset=%@", charset] forHTTPHeaderField:@"Content-Type"];
+//                    [request setHTTPBody:[AFJSONStringFromParameters(parameters) dataUsingEncoding:self.stringEncoding]];
                     break;
                 case AFPropertyListParameterEncoding:;
                     [request setValue:[NSString stringWithFormat:@"application/x-plist; charset=%@", charset] forHTTPHeaderField:@"Content-Type"];
